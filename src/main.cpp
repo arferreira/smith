@@ -3,6 +3,33 @@
 #include <iostream>
 #include <string>
 
+//Change when updating smith
+constexpr const char* SMITH_VERSION = "0.1.0";
+
+void print_help(const char* program_name) {
+  std::cout
+    << "Usage:\n"
+    << "  " << program_name << " ProjectName\n"
+    << "  " << program_name << " --help\n"
+    << "  " << program_name << " --version\n\n"
+    << "Options:\n"
+    << "  --help      Show this help message\n"
+    << "  --version   Print version information\n";
+}
+
+void print_version() {
+  std::cout << "smith version: " << SMITH_VERSION << std::endl;
+}
+
+bool write_file(const std::string& path, const std::string& contents) {
+  std::ofstream out(path);
+  if (!out) {
+    return false;
+  }
+  out << contents;
+  return static_cast<bool>(out);
+}
+
 namespace fs = std::filesystem;
 
 // built in templates
@@ -61,8 +88,20 @@ std::string replace_project_name(const std::string& template_string, const std::
 
 int main(int argc, char** argv) {
   if (argc < 2) {
-    std::cerr << "Usage: " << argv[0] << " ProjectName" << std::endl;
+    print_help(argv[0]);
     return 1;
+  }
+
+  std::string arg = argv[1];
+
+  if (arg == "--help") {
+    print_help(argv[0]);
+    return 0;
+  }
+
+  if (arg == "--version") {
+    print_version();
+    return 0;
   }
 
   std::string project = argv[1];
