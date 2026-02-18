@@ -21,14 +21,6 @@ void print_version() {
   std::cout << "smith version: " << SMITH_VERSION << std::endl;
 }
 
-bool write_file(const std::string& path, const std::string& contents) {
-  std::ofstream out(path);
-  if (!out) {
-    return false;
-  }
-  out << contents;
-  return static_cast<bool>(out);
-}
 
 namespace fs = std::filesystem;
 
@@ -104,20 +96,19 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  std::string project = argv[1];
-  fs::create_directories(project + "/src");
-  fs::create_directories(project + "/include");
-  fs::create_directories(project + "/tests");
+  fs::create_directories(arg + "/src");
+  fs::create_directories(arg + "/include");
+  fs::create_directories(arg + "/tests");
 
   // create files replacing project name
-  std::ofstream(project + "/src/main.cpp") << replace_project_name(main_template, project);
-  std::ofstream(project + "/CMakeLists.txt") << replace_project_name(cmake_template, project);
-  std::ofstream(project + "/README.md") << replace_project_name(readme_template, project);
-  std::ofstream(project + "/.gitignore") << replace_project_name(gitignore_template, project);
-  std::ofstream(project + "/tests/test.cpp") << replace_project_name(test_template, project);
+  std::ofstream(arg + "/src/main.cpp") << replace_project_name(main_template, project);
+  std::ofstream(arg + "/CMakeLists.txt") << replace_project_name(cmake_template, project);
+  std::ofstream(arg + "/README.md") << replace_project_name(readme_template, project);
+  std::ofstream(arg + "/.gitignore") << replace_project_name(gitignore_template, project);
+  std::ofstream(arg + "/tests/test.cpp") << replace_project_name(test_template, project);
 
-  std::cout << "Project created successfully: " << project << std::endl;
-  std::cout << "Run 'cd " << project << " && cmake .. && make' to build the project." << std::endl;
+  std::cout << "Project created successfully: " << arg << std::endl;
+  std::cout << "Run 'cd " << arg << " && cmake .. && make' to build the project." << std::endl;
 
   return 0;
 }
