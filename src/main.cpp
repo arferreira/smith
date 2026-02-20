@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <cctype>
 
 //Change when updating smith
 constexpr const char* SMITH_VERSION = "0.1.0";
@@ -21,6 +22,19 @@ void print_version() {
   std::cout << "smith version: " << SMITH_VERSION << std::endl;
 }
 
+bool is_valid_project_name(const std::string& name) {
+  if (name.empty() || name.size() > 64) {
+    return false;
+  }
+
+  for (char c : name) {
+    if (!(std::isalnum(static_cast<unsigned char>(c)) || c == '-' || c == '_')) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 namespace fs = std::filesystem;
 
@@ -86,6 +100,13 @@ int main(int argc, char** argv) {
 
   std::string arg = argv[1];
 
+  if (!is_valid_project_name(arg)) {
+    std::cerr << "Error: invalid project name '" << arg << "'.\n"
+              << "Project names must be 1–64 characters long and contain only "
+              << "letters, numbers, hyphens, or underscores.\n";
+    return 1;
+  }
+
   if (arg == "--help") {
     print_help(argv[0]);
     return 0;
@@ -101,11 +122,11 @@ int main(int argc, char** argv) {
   fs::create_directories(arg + "/tests");
 
   // create files replacing project name
-  std::ofstream(arg + "/src/main.cpp") << replace_project_name(main_template, project);
-  std::ofstream(arg + "/CMakeLists.txt") << replace_project_name(cmake_template, project);
-  std::ofstream(arg + "/README.md") << replace_project_name(readme_template, project);
-  std::ofstream(arg + "/.gitignore") << replace_project_name(gitignore_template, project);
-  std::ofstream(arg + "/tests/test.cpp") << replace_project_name(test_template, project);
+  std::ofstream(arg + "/src/main.cpp") << replace_project_name(main_template, arg);
+  std::ofstream(arg + "/CMakeLists.txt") << replace_project_name(cmake_template, arg);
+  std::ofstream(arg + "/README.md") << replace_project_name(readme_template, arg);
+  std::ofstream(arg + "/.gitignore") << replace_project_name(gitignore_template, arg);
+  std::ofstream(arg + "/tests/test.cpp") << replace_project_name(test_template, arg);
 
   std::cout << "Project created successfully: " << arg << std::endl;
   std::cout << "Run 'cd " << arg << " && cmake .. && make' to build the project." << std::endl;
