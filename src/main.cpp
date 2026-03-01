@@ -2,6 +2,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <ctime>
+
 
 //Change when updating smith
 constexpr const char* SMITH_VERSION = "0.1.0";
@@ -65,15 +67,52 @@ const std::string test_template = R"(
   }
 )";
 
+const std::string license_template = R"(MIT License
+
+Copyright (c) [year]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+)";
 
 // replace template strings with project name
 std::string replace_project_name(const std::string& template_string, const std::string& project_name) {
   std::string result = template_string;
   size_t pos = 0;
   while ((pos = result.find("PROJECT_NAME", pos)) != std::string::npos) {
-    result.replace(pos, 9, project_name);
+    result.replace(pos, 12, project_name); // Used to be 9
     pos += project_name.length();
   }
+  return result;
+}
+
+std::string replace_year_name(const std::string& template_string) {
+  std::string result = template_string;
+  std::time_t time = std::time(nullptr);
+  std::tm* now = std::localtime(&time);
+  std::string year_name = std::to_string(now->tm_year + 1900);
+
+  size_t pos = 0;
+  while ((pos = result.find("[year]", pos)) != std::string::npos) {
+    result.replace(pos, 6, year_name);
+    pos += year_name.length();
+  }
+
   return result;
 }
 
@@ -101,11 +140,14 @@ int main(int argc, char** argv) {
   fs::create_directories(arg + "/tests");
 
   // create files replacing project name
-  std::ofstream(arg + "/src/main.cpp") << replace_project_name(main_template, project);
-  std::ofstream(arg + "/CMakeLists.txt") << replace_project_name(cmake_template, project);
-  std::ofstream(arg + "/README.md") << replace_project_name(readme_template, project);
-  std::ofstream(arg + "/.gitignore") << replace_project_name(gitignore_template, project);
-  std::ofstream(arg + "/tests/test.cpp") << replace_project_name(test_template, project);
+  std::ofstream(arg + "/src/main.cpp") << replace_project_name(main_template, arg);
+  std::ofstream(arg + "/CMakeLists.txt") << replace_project_name(cmake_template, arg);
+  std::ofstream(arg + "/README.md") << replace_project_name(readme_template, arg);
+  std::ofstream(arg + "/.gitignore") << replace_project_name(gitignore_template, arg);
+  std::ofstream(arg + "/tests/test.cpp") << replace_project_name(test_template, arg);
+
+  // create LICENSE file replacing the year with current year
+  std::ofstream(arg + "/LICENSE") << replace_year_name(license_template);
 
   std::cout << "Project created successfully: " << arg << std::endl;
   std::cout << "Run 'cd " << arg << " && cmake .. && make' to build the project." << std::endl;
